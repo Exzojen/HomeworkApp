@@ -6,10 +6,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.example.hwapp.theme.fontSizeMainCompose
+import com.example.hwapp.theme.paddingMainCompose
+import com.example.hwapp.theme.paddingSmallCompose
 
 @Composable
 fun LoginScreen() {
@@ -19,15 +21,17 @@ fun LoginScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.secondaryContainer)
-            .padding(16.dp),
+            .background(MaterialTheme.colorScheme.background)
+            .padding(paddingMainCompose),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Это экран логина",
-            fontSize = 24.sp,
-            modifier = Modifier.padding(bottom = 16.dp)
+            text = "Авторизация",
+            fontSize = fontSizeMainCompose,
+            modifier = Modifier.padding(bottom = paddingMainCompose),
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onBackground
         )
         TextField(
             value = email,
@@ -35,7 +39,7 @@ fun LoginScreen() {
             label = { Text("Email") },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 8.dp)
+                .padding(bottom = paddingSmallCompose)
         )
         TextField(
             value = password,
@@ -44,7 +48,7 @@ fun LoginScreen() {
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 16.dp)
+                .padding(bottom = paddingMainCompose)
         )
         Button(
             onClick = {},

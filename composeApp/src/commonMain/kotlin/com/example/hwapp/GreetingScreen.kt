@@ -8,10 +8,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
+import com.example.hwapp.theme.AppTheme
+import com.example.hwapp.theme.fontSizeMainCompose
+import com.example.hwapp.theme.paddingMainCompose
+import com.example.hwapp.theme.paddingTinyCompose
 import org.jetbrains.compose.resources.painterResource
 import hwapp.composeapp.generated.resources.Res
 import hwapp.composeapp.generated.resources.compose_multiplatform
@@ -22,15 +25,19 @@ fun GreetingScreen(
 ) {
     Column(
         modifier = Modifier
-            .background(MaterialTheme.colorScheme.primaryContainer)
+            .background(MaterialTheme.colorScheme.background)
             .safeContentPadding()
             .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
             text = "Добро пожаловать! Ня :3",
-            modifier = Modifier.weight(1f),
-            fontSize = 20.sp
+            modifier = Modifier
+                .weight(1f)
+                .padding(top = paddingMainCompose),
+            fontSize = fontSizeMainCompose,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onBackground
         )
         AsyncImage(
             model = "https://img1.picmix.com/output/stamp/normal/2/6/4/0/2410462_d5309.png",
@@ -44,7 +51,7 @@ fun GreetingScreen(
         )
         Spacer(modifier = Modifier.weight(1f))
         Button(
-            modifier = Modifier.padding(top = 4.dp),
+            modifier = Modifier.padding(top = paddingTinyCompose),
             onClick = onContinueClicked,
         ) {
             Text("Продолжить")
