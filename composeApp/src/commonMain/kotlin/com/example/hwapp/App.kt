@@ -40,7 +40,12 @@ fun App() {
                 )
             }
             composable("main") {
-                MainScreen(username = currentUsername.value.ifEmpty { "Гость" })
+                MainScreen(
+                    username = currentUsername.value.ifEmpty { "Гость" },
+                    onExitApp = {
+                        exitApplication()
+                    }
+                )
             }
         }
     }

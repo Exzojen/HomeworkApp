@@ -2,8 +2,10 @@ package com.example.hwapp
 
 import android.os.Build
 
-class AndroidPlatform : Platform {
-    override val name: String = "Android ${Build.VERSION.SDK_INT}"
-}
+import android.os.Process
+import android.util.Log
 
-actual fun getPlatform(): Platform = AndroidPlatform()
+actual fun exitApplication() {
+    Log.d("ExitApp", "Приложение завершается через killProcess")
+    Process.killProcess(Process.myPid())
+}

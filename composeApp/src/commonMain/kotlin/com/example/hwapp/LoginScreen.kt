@@ -4,21 +4,21 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.hwapp.events.LoginUiEvent
+import com.example.hwapp.theme.StringConstants
 import com.example.hwapp.theme.AppTheme
 import com.example.hwapp.theme.fontSizeMainCompose
 import com.example.hwapp.theme.paddingMainCompose
 import com.example.hwapp.theme.paddingSmallCompose
+import com.example.hwapp.theme.smallLoadingCircle
 import com.example.hwapp.viewmodels.LoginViewModel
 import kotlinx.coroutines.flow.collectLatest
 
@@ -43,9 +43,9 @@ fun LoginScreen(
                     errorMessage = event.message
                 }
 
-                LoginUiEvent.NavigateBack -> {
-                    navController.popBackStack()
-                }
+//                LoginUiEvent.NavigateBack -> {
+//                    navController.popBackStack()
+//                }
             }
         }
     }
@@ -59,7 +59,7 @@ fun LoginScreen(
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Авторизация",
+            text = StringConstants.LoginScreen.TITLE,
             fontSize = fontSizeMainCompose,
             modifier = Modifier.padding(bottom = paddingMainCompose),
             fontWeight = FontWeight.Bold,
@@ -75,9 +75,9 @@ fun LoginScreen(
         }
 
         TextField(
-            value = state.login,
-            onValueChange = viewModel::onLoginChange,
-            label = { Text("Логин") },
+            value = state.username,
+            onValueChange = {viewModel.onUsernameChanged(it)},
+            label = { Text(StringConstants.LoginScreen.LOGIN_LABEL) },
             isError = errorMessage != null,
             enabled = !state.isLoginButtonActive,
             modifier = Modifier
@@ -87,8 +87,8 @@ fun LoginScreen(
 
         TextField(
             value = state.password,
-            onValueChange = viewModel::onPasswordChange,
-            label = { Text("Пароль") },
+            onValueChange = {viewModel.onPasswordChanged(it)},
+            label = { Text(StringConstants.LoginScreen.PASSWORD_LABEL) },
             visualTransformation = PasswordVisualTransformation(),
             isError = errorMessage != null,
             enabled = !state.isLoginButtonActive,
@@ -105,7 +105,7 @@ fun LoginScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Разрешить вход:",
+                text = StringConstants.LoginScreen.ALLOW_LOGIN_TEXT,
                 color = MaterialTheme.colorScheme.onBackground
             )
             Switch(
@@ -126,19 +126,12 @@ fun LoginScreen(
         ) {
             if (state.isLoginButtonActive) {
                 CircularProgressIndicator(
-                    modifier = Modifier.size(24.dp),
+                    modifier = Modifier.size(smallLoadingCircle),
                     color = MaterialTheme.colorScheme.onPrimary
                 )
             } else {
-                Text("Войти")
+                Text(StringConstants.LoginScreen.LOGIN_BUTTON_TEXT)
             }
-        }
-
-        TextButton(
-            onClick = viewModel::onNavigateBack,
-            modifier = Modifier.padding(top = paddingSmallCompose)
-        ) {
-            Text("Назад")
         }
     }
 }

@@ -4,14 +4,14 @@ import androidx.compose.runtime.Immutable
 
 @Immutable
 data class LoginUiState(
-    val login: String,
+    val username: String,
     val password: String,
     val error: Boolean,
     val isLoginButtonActive: Boolean,
 ) {
     companion object {
         val Initial = LoginUiState(
-            login = "",
+            username = "",
             password = "",
             error = false,
             isLoginButtonActive = false,

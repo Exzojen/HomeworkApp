@@ -9,7 +9,7 @@ sealed class LoginUiEvent {
         val message: String
     ) : LoginUiEvent()
 
-    data object NavigateBack : LoginUiEvent()
+//    data object NavigateBack : LoginUiEvent()
 }
 
 data class UserData(

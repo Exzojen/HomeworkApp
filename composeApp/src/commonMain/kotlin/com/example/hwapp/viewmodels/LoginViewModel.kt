@@ -18,11 +18,11 @@ class LoginViewModel : BaseViewModel<LoginUiEvent, LoginUiState>(
     private val _events = MutableSharedFlow<LoginUiEvent>()
     override val events: SharedFlow<LoginUiEvent> = _events.asSharedFlow()
 
-    fun onLoginChange(value: String) {
-        updateState { copy(login = value) }
+    fun onUsernameChanged(value: String) {
+        updateState { copy(username = value) }
     }
 
-    fun onPasswordChange(value: String) {
+    fun onPasswordChanged(value: String) {
         updateState { copy(password = value) }
     }
 
@@ -40,18 +40,18 @@ class LoginViewModel : BaseViewModel<LoginUiEvent, LoginUiState>(
             delay(2000)
 
             val userData = UserData(
-                username = state.value.login,
+                username = state.value.username,
                 userId = Random.nextInt(1000, 9999).toString(),
                 token = "token_${Random.nextInt(100000, 999999)}",
-                email = "${state.value.login}@example.com"
+                email = "${state.value.username}@example.com"
             )
             _events.emit(LoginUiEvent.LoginSuccess(user = userData))
         }
     }
 
-    fun onNavigateBack() {
-        viewModelScope.launch {
-            _events.emit(LoginUiEvent.NavigateBack)
-        }
-    }
+//    fun onNavigateBack() {
+//        viewModelScope.launch {
+//            _events.emit(LoginUiEvent.NavigateBack)
+//        }
+//    }
 }
