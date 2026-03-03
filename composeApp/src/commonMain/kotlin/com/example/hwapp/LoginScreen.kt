@@ -12,17 +12,43 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.example.hwapp.events.LoginUiEvent
+import com.example.hwapp.theme.AppTheme
 import com.example.hwapp.theme.fontSizeMainCompose
 import com.example.hwapp.theme.paddingMainCompose
 import com.example.hwapp.theme.paddingSmallCompose
 import com.example.hwapp.viewmodels.LoginViewModel
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun LoginScreen(
-    viewModel: LoginViewModel = viewModel()
+    viewModel: LoginViewModel = viewModel(),
+    navController: NavController
 ) {
     val state by viewModel.state.collectAsState()
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
+    LaunchedEffect(Unit) {
+        viewModel.events.collectLatest { event ->
+            when (event) {
+                is LoginUiEvent.LoginSuccess -> {
+                    navController.navigate("main/${event.user.username}") {
+                        popUpTo("login") { inclusive = true }
+                    }
+                }
+
+                is LoginUiEvent.LoginError -> {
+                    errorMessage = event.message
+                }
+
+                LoginUiEvent.NavigateBack -> {
+                    navController.popBackStack()
+                }
+            }
+        }
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -39,9 +65,9 @@ fun LoginScreen(
             color = MaterialTheme.colorScheme.onBackground
         )
 
-        if (state.error) {
+        if (errorMessage != null) {
             Text(
-                text = "Ошибка входа. Попробуйте снова.",
+                text = errorMessage ?: "",
                 color = MaterialTheme.colorScheme.error,
                 modifier = Modifier.padding(bottom = paddingSmallCompose)
             )
@@ -50,8 +76,9 @@ fun LoginScreen(
         TextField(
             value = state.login,
             onValueChange = viewModel::onLoginChange,
-            label = { Text("Email") },
-            isError = state.error,
+            label = { Text("Логин") },
+            isError = errorMessage != null,
+            enabled = !state.isLoginButtonActive,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = paddingSmallCompose)
@@ -62,7 +89,8 @@ fun LoginScreen(
             onValueChange = viewModel::onPasswordChange,
             label = { Text("Пароль") },
             visualTransformation = PasswordVisualTransformation(),
-            isError = state.error,
+            isError = errorMessage != null,
+            enabled = !state.isLoginButtonActive,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = paddingMainCompose)
@@ -71,7 +99,7 @@ fun LoginScreen(
         Button(
             onClick = viewModel::onLoginClick,
             modifier = Modifier.fillMaxWidth(),
-            enabled = state.isLoginButtonActive.not()
+            enabled = !state.isLoginButtonActive
         ) {
             if (state.isLoginButtonActive) {
                 CircularProgressIndicator(
@@ -82,13 +110,22 @@ fun LoginScreen(
                 Text("Войти")
             }
         }
+
+        TextButton(
+            onClick = viewModel::onNavigateBack,
+            modifier = Modifier.padding(top = paddingSmallCompose)
+        ) {
+            Text("Назад")
+        }
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun LoginScreenPreview() {
-    MaterialTheme {
-        LoginScreen()
+    AppTheme {
+        LoginScreen(
+            navController = rememberNavController()
+        )
     }
 }

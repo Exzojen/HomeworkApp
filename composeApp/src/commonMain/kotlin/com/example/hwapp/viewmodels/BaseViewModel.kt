@@ -11,27 +11,16 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-abstract class BaseViewModel<Label, State>(initialState: State) : ViewModel() {
+abstract class BaseViewModel<Event, State>(initialState: State) : ViewModel() {
 
-    private val mutableLabel = Channel<Label>(Channel.BUFFERED)
 
     private val mutableState = MutableStateFlow(initialState)
-
-    val state: StateFlow<State>
-        get() = mutableState.asStateFlow()
-
-     val label: Flow<Label>
-        get() = mutableLabel.receiveAsFlow()
-
+    val state: StateFlow<State> = mutableState.asStateFlow()
 
     fun updateState(block: State.() -> State) {
         mutableState.update { it.block() }
     }
 
-    protected open fun acceptLabel(label: Label) {
-        viewModelScope.launch {
-            mutableLabel.send(label)
-        }
-    }
+    abstract val events: kotlinx.coroutines.flow.SharedFlow<Event>
 }
 
