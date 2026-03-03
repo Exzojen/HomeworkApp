@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import kotlin.random.Random
+
 class LoginViewModel : BaseViewModel<LoginUiEvent, LoginUiState>(
     initialState = LoginUiState.Initial,
 ) {
@@ -38,25 +39,13 @@ class LoginViewModel : BaseViewModel<LoginUiEvent, LoginUiState>(
         viewModelScope.launch {
             delay(2000)
 
-            val isSuccess = Random.nextBoolean()
-
-            if (isSuccess) {
-                val userData = UserData(
-                    username = state.value.login,
-                    userId = Random.nextInt(1000, 9999).toString(),
-                    token = "token_${Random.nextInt(100000, 999999)}",
-                    email = "${state.value.login}@example.com"
-                )
-                _events.emit(LoginUiEvent.LoginSuccess(user = userData))
-            } else {
-                _events.emit(LoginUiEvent.LoginError(message = "Неверный логин или пароль"))
-                updateState {
-                    copy(
-                        isLoginButtonActive = false,
-                        error = true,
-                    )
-                }
-            }
+            val userData = UserData(
+                username = state.value.login,
+                userId = Random.nextInt(1000, 9999).toString(),
+                token = "token_${Random.nextInt(100000, 999999)}",
+                email = "${state.value.login}@example.com"
+            )
+            _events.emit(LoginUiEvent.LoginSuccess(user = userData))
         }
     }
 

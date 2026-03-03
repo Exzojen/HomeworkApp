@@ -30,6 +30,7 @@ fun LoginScreen(
 ) {
     val state by viewModel.state.collectAsState()
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var allowLogin by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.events.collectLatest { event ->
@@ -48,6 +49,7 @@ fun LoginScreen(
             }
         }
     }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -95,8 +97,30 @@ fun LoginScreen(
                 .padding(bottom = paddingMainCompose)
         )
 
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = paddingMainCompose),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Разрешить вход:",
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            Switch(
+                checked = allowLogin,
+                onCheckedChange = { allowLogin = it },
+                enabled = !state.isLoginButtonActive
+            )
+        }
+
         Button(
-            onClick = viewModel::onLoginClick,
+            onClick = {
+                if (allowLogin) {
+                    viewModel.onLoginClick()
+                }
+            },
             modifier = Modifier.fillMaxWidth(),
             enabled = !state.isLoginButtonActive
         ) {
