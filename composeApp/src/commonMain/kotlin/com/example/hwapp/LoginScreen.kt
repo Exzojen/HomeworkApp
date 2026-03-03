@@ -10,14 +10,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.hwapp.theme.fontSizeMainCompose
 import com.example.hwapp.theme.paddingMainCompose
 import com.example.hwapp.theme.paddingSmallCompose
+import com.example.hwapp.viewmodels.LoginViewModel
 
 @Composable
-fun LoginScreen() {
-    var email by rememberSaveable { mutableStateOf("") }
-    var password by rememberSaveable { mutableStateOf("") }
+fun LoginScreen(
+    viewModel: LoginViewModel = viewModel()
+) {
+    val state by viewModel.state.collectAsState()
 
     Column(
         modifier = Modifier
@@ -34,28 +38,49 @@ fun LoginScreen() {
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground
         )
+
+        if (state.error) {
+            Text(
+                text = "Ошибка входа. Попробуйте снова.",
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(bottom = paddingSmallCompose)
+            )
+        }
+
         TextField(
-            value = email,
-            onValueChange = { email = it },
+            value = state.login,
+            onValueChange = viewModel::onLoginChange,
             label = { Text("Email") },
+            isError = state.error,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = paddingSmallCompose)
         )
+
         TextField(
-            value = password,
-            onValueChange = { password = it },
+            value = state.password,
+            onValueChange = viewModel::onPasswordChange,
             label = { Text("Пароль") },
             visualTransformation = PasswordVisualTransformation(),
+            isError = state.error,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = paddingMainCompose)
         )
+
         Button(
-            onClick = {},
-            modifier = Modifier.fillMaxWidth()
+            onClick = viewModel::onLoginClick,
+            modifier = Modifier.fillMaxWidth(),
+            enabled = state.isLoginButtonActive.not()
         ) {
-            Text("Войти")
+            if (state.isLoginButtonActive) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+            } else {
+                Text("Войти")
+            }
         }
     }
 }
