@@ -43,6 +43,8 @@ kotlin {
             implementation(libs.jetbrains.androidx.navigation.compose)
             implementation(libs.napier)
             implementation(libs.coil.compose)
+//            implementation(libs.jetbrains.androidx.compose.material.icons.core)
+//            implementation(libs.jetbrains.androidx.compose.material.icons.extended)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

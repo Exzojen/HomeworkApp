@@ -12,6 +12,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import coil3.compose.AsyncImage
 import com.example.hwapp.theme.AppTheme
+import com.example.hwapp.theme.StringConstants
 import com.example.hwapp.theme.fontSizeMainCompose
 import com.example.hwapp.theme.paddingMainCompose
 import com.example.hwapp.theme.paddingTinyCompose
@@ -31,7 +32,7 @@ fun GreetingScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
-            text = "Добро пожаловать! Ня :3",
+            text = StringConstants.GreetingScreen.GREETING_MESSAGE,
             modifier = Modifier
                 .weight(1f)
                 .padding(top = paddingMainCompose),
@@ -54,7 +55,7 @@ fun GreetingScreen(
             modifier = Modifier.padding(top = paddingTinyCompose),
             onClick = onContinueClicked,
         ) {
-            Text("Продолжить")
+            Text(StringConstants.GreetingScreen.CONTINUE_LABEL)
         }
         Spacer(modifier = Modifier.weight(1f))
     }
@@ -63,7 +64,7 @@ fun GreetingScreen(
 @Preview
 @Composable
 fun GreetingScreenPreview() {
-    MaterialTheme {
+    AppTheme {
         GreetingScreen(onContinueClicked = {})
     }
 }
