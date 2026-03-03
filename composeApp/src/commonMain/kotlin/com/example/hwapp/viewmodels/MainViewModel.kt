@@ -1,5 +1,6 @@
 package com.example.hwapp.viewmodels
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.viewModelScope
 import com.example.hwapp.states.MainUiState
 import com.example.hwapp.events.MainUiEvent
@@ -97,6 +98,7 @@ class MainViewModel : BaseViewModel<MainUiEvent, MainUiState>(
     }
 }
 
+@Immutable
 data class VKPostItem(
     val id: Int,
     val author: String,
