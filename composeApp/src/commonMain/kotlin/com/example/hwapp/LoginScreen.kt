@@ -25,7 +25,8 @@ import kotlinx.coroutines.flow.collectLatest
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel = viewModel(),
-    navController: NavController
+    navController: NavController,
+    onLoginSuccess: (String) -> Unit = {}
 ) {
     val state by viewModel.state.collectAsState()
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -34,9 +35,7 @@ fun LoginScreen(
         viewModel.events.collectLatest { event ->
             when (event) {
                 is LoginUiEvent.LoginSuccess -> {
-                    navController.navigate("main/${event.user.username}") {
-                        popUpTo("login") { inclusive = true }
-                    }
+                    onLoginSuccess(event.user.username)
                 }
 
                 is LoginUiEvent.LoginError -> {

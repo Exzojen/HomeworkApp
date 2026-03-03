@@ -1,9 +1,11 @@
 package com.example.hwapp
 
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavType
-import androidx.navigation.compose.*
-import androidx.navigation.navArgument
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.example.hwapp.theme.AppTheme
 
 
@@ -11,6 +13,7 @@ import com.example.hwapp.theme.AppTheme
 fun App() {
     AppTheme {
         val navController = rememberNavController()
+        val currentUsername = remember { mutableStateOf("") }
 
         NavHost(
             navController = navController,
@@ -27,15 +30,17 @@ fun App() {
             }
             composable("login") {
                 LoginScreen(
-                    navController = navController
+                    navController = navController,
+                    onLoginSuccess = { username ->
+                        currentUsername.value = username
+                        navController.navigate("main") {
+                            popUpTo("login") { inclusive = true }
+                        }
+                    }
                 )
             }
-            composable(
-                "main/{username}",
-                arguments = listOf(navArgument("username") { type = NavType.StringType })
-            ) { backStackEntry ->
-                val username = backStackEntry.arguments?.getString("username") ?: "Гость"
-                MainScreen(username = username)
+            composable("main") {
+                MainScreen(username = currentUsername.value.ifEmpty { "Гость" })
             }
         }
     }
