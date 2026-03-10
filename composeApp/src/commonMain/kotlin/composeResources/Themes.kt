@@ -1,8 +1,10 @@
-package com.example.hwapp.theme
+package composeResources
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
+import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.CompositionLocalProvider
@@ -167,11 +169,11 @@ object AppTheme {
         @Composable
         get() = MaterialTheme.colorScheme
 
-    val typography: androidx.compose.material3.Typography
+    val typography: Typography
         @Composable
         get() = MaterialTheme.typography
 
-    val shapes: androidx.compose.material3.Shapes
+    val shapes: Shapes
         @Composable
         get() = MaterialTheme.shapes
 }

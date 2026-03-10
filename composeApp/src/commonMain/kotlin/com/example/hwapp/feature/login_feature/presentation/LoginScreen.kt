@@ -1,4 +1,4 @@
-package com.example.hwapp
+package com.example.hwapp.feature.login_feature.presentation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -13,13 +13,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.hwapp.events.LoginUiEvent
-import com.example.hwapp.theme.StringConstants
-import com.example.hwapp.theme.AppTheme
-import com.example.hwapp.theme.fontSizeMainCompose
-import com.example.hwapp.theme.paddingMainCompose
-import com.example.hwapp.theme.paddingSmallCompose
-import com.example.hwapp.theme.smallLoadingCircle
-import com.example.hwapp.viewmodels.LoginViewModel
+import composeResources.StringConstants
+import composeResources.AppTheme
+import composeResources.fontSizeMainCompose
+import composeResources.paddingMainCompose
+import composeResources.paddingSmallCompose
+import composeResources.smallLoadingCircle
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable

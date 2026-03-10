@@ -1,4 +1,4 @@
-package com.example.hwapp
+package com.example.hwapp.feature.greeting_feature
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -11,11 +11,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import coil3.compose.AsyncImage
-import com.example.hwapp.theme.AppTheme
-import com.example.hwapp.theme.StringConstants
-import com.example.hwapp.theme.fontSizeMainCompose
-import com.example.hwapp.theme.paddingMainCompose
-import com.example.hwapp.theme.paddingTinyCompose
+import composeResources.AppTheme
+import composeResources.StringConstants
+import composeResources.fontSizeMainCompose
+import composeResources.paddingMainCompose
+import composeResources.paddingTinyCompose
 import org.jetbrains.compose.resources.painterResource
 import hwapp.composeapp.generated.resources.Res
 import hwapp.composeapp.generated.resources.compose_multiplatform
