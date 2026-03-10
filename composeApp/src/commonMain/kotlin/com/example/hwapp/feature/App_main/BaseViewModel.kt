@@ -1,15 +1,11 @@
-package com.example.hwapp.viewmodels
+package com.example.hwapp.feature.App_main
 
 import  androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 
 abstract class BaseViewModel<Event, State>(initialState: State) : ViewModel() {
 
@@ -21,6 +17,6 @@ abstract class BaseViewModel<Event, State>(initialState: State) : ViewModel() {
         mutableState.update { it.block() }
     }
 
-    abstract val events: kotlinx.coroutines.flow.SharedFlow<Event>
+    abstract val events: SharedFlow<Event>
 }
 
