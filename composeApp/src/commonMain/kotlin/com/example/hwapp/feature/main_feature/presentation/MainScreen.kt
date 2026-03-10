@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -20,22 +21,30 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import com.example.hwapp.events.MainUiEvent
 import composeResources.AppTheme
-import composeResources.fontSizeMainCompose
+import composeResources.StringConstants
+import composeResources.StringConstants.MainScreen.mainScreenPagingErrorLabel
+import composeResources.StringConstants.MainScreen.stubScreenContent
+import composeResources.height_modifier_description
+import composeResources.height_modifier_large
+import composeResources.height_modifier_medium
+import composeResources.height_modifier_small
 import composeResources.paddingMainCompose
-import composeResources.paddingSmallCompose
+import composeResources.repo_description_labels_font
+import composeResources.tab_list_font_size
 import kotlinx.coroutines.flow.collectLatest
 import org.jetbrains.compose.resources.painterResource
 import hwapp.composeapp.generated.resources.Res
 import hwapp.composeapp.generated.resources.compose_multiplatform
-// Здесь появятся импорты ваших новых иконок после сборки проекта, например:
 import hwapp.composeapp.generated.resources.ic_home
 import hwapp.composeapp.generated.resources.ic_inbox
 import hwapp.composeapp.generated.resources.ic_explore
+import hwapp.composeapp.generated.resources.ic_fork
 import hwapp.composeapp.generated.resources.ic_profile
+import hwapp.composeapp.generated.resources.ic_star
 
 @Composable
 fun MainScreen(
-    username: String = "Developer",
+    username: String = StringConstants.MainScreen.MAIN_SCREEN_USERNAME_PLACEHOLDER,
     viewModel: MainViewModel = viewModel(),
     onExitApp: () -> Unit = {}
 ) {
@@ -58,32 +67,71 @@ fun MainScreen(
         }
     ) { paddingValues ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
+            modifier = Modifier.fillMaxSize().padding(paddingValues)
                 .background(MaterialTheme.colorScheme.background)
         ) {
-            MainScreenHeader(username = username, currentTab = state.currentTab)
+            MainScreenHeader(
+                username = state.username,
+                currentTab = state.currentTab
+            )
 
-            if (state.isLoading) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+            if (state.currentTab == GithubTab.HOME) {
+                OutlinedTextField(
+                    value = state.query,
+                    onValueChange = { viewModel.onQueryChanged(it) },
+                    modifier = Modifier.fillMaxWidth().padding(paddingMainCompose),
+                    placeholder = { Text(StringConstants.MainScreen.MAIN_SCREEN_REPO_SEARCHBAR_TEXT) },
+                    singleLine = true
+                )
+
+                Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                    when {
+                        state.isLoading -> {
+                            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                        }
+
+                        state.errorMessage != null && state.items.isEmpty() -> {
+                            Column(
+                                modifier = Modifier.align(Alignment.Center),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    "Ошибка: ${state.errorMessage}",
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                                Spacer(modifier = Modifier.height(height_modifier_small))
+                                Button(onClick = { viewModel.retry() }) { Text(StringConstants.MainScreen.MAIN_SCREEN_RETRY_ACTION) }
+                            }
+                        }
+
+                        state.isListEmpty -> {
+                            Column(
+                                modifier = Modifier.align(Alignment.Center),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Icon(
+                                    painter = painterResource(Res.drawable.compose_multiplatform),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(64.dp)
+                                )
+                                Spacer(modifier = Modifier.height(height_modifier_medium))
+                                Text(StringConstants.MainScreen.MAIN_SCREEN_SEARCH_ISBLANK)
+                            }
+                        }
+
+                        else -> {
+                            MainScreenFeed(
+                                items = state.items,
+                                isPaging = state.isPaging,
+                                pagingError = if (state.items.isNotEmpty()) state.errorMessage else null,
+                                onLoadMore = { viewModel.loadNextPage() },
+                                onRetryPaging = { viewModel.loadNextPage() }
+                            )
+                        }
+                    }
                 }
             } else {
-                when (state.currentTab) {
-                    GithubTab.HOME -> {
-                        MainScreenFeed(
-                            items = state.items,
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-                    GithubTab.INBOX, GithubTab.EXPLORE, GithubTab.PROFILE -> {
-                        StubScreen(tabName = state.currentTab.name, modifier = Modifier.weight(1f))
-                    }
-                }
+                StubScreen(tabName = state.currentTab.name, modifier = Modifier.weight(1f))
             }
         }
     }
@@ -104,12 +152,12 @@ private fun MainScreenHeader(username: String, currentTab: GithubTab) {
         ) {
             Text(
                 text = when (currentTab) {
-                    GithubTab.HOME -> "Home"
-                    GithubTab.INBOX -> "Inbox"
-                    GithubTab.EXPLORE -> "Explore"
+                    GithubTab.HOME -> StringConstants.MainScreen.MAIN_SCREEN_TAB_HOME
+                    GithubTab.INBOX -> StringConstants.MainScreen.MAIN_SCREEN_TAB_INBOX
+                    GithubTab.EXPLORE -> StringConstants.MainScreen.MAIN_SCREEN_TAB_EXPLORE
                     GithubTab.PROFILE -> username
                 },
-                fontSize = 20.sp,
+                fontSize = tab_list_font_size,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -120,9 +168,23 @@ private fun MainScreenHeader(username: String, currentTab: GithubTab) {
 @Composable
 private fun MainScreenFeed(
     items: List<GithubRepoItem>,
+    isPaging: Boolean,
+    pagingError: String?,
+    onLoadMore: () -> Unit,
+    onRetryPaging: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val listState = androidx.compose.foundation.lazy.rememberLazyListState()
+
+    LaunchedEffect(listState.layoutInfo.visibleItemsInfo) {
+        val lastVisibleItemIndex = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -1
+        if (lastVisibleItemIndex >= items.size - 2) {
+            onLoadMore()
+        }
+    }
+
     LazyColumn(
+        state = listState,
         modifier = modifier.fillMaxWidth(),
         contentPadding = PaddingValues(paddingMainCompose),
         verticalArrangement = Arrangement.spacedBy(paddingMainCompose)
@@ -130,6 +192,54 @@ private fun MainScreenFeed(
         items(items = items, key = { it.id }) { item ->
             GithubRepoCard(item = item)
         }
+
+        item {
+            if (isPaging) {
+                Box(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            } else if (pagingError != null) {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        mainScreenPagingErrorLabel(pagingError),
+                        color = MaterialTheme.colorScheme.error
+                    )
+                    Button(onClick = onRetryPaging) { Text(StringConstants.MainScreen.MAIN_SCREEN_RETRY_ACTION) }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun RepoStatItem(
+    icon: Painter,
+    text: String,
+    iconTint: Color = MaterialTheme.colorScheme.onSurfaceVariant,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+    ) {
+        Icon(
+            painter = icon,
+            contentDescription = null,
+            modifier = Modifier.size(16.dp),
+            tint = iconTint
+        )
+        Spacer(modifier = Modifier.width(4.dp))
+        Text(
+            text = text,
+            fontSize = repo_description_labels_font,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 
@@ -151,7 +261,6 @@ private fun GithubRepoCard(
                 .fillMaxWidth()
                 .padding(paddingMainCompose)
         ) {
-            // Заголовок карточки с аватаркой и названием
             Row(verticalAlignment = Alignment.CenterVertically) {
                 AsyncImage(
                     model = item.avatarUrl,
@@ -179,7 +288,6 @@ private fun GithubRepoCard(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Описание
             Text(
                 text = item.description,
                 fontSize = 14.sp,
@@ -187,19 +295,17 @@ private fun GithubRepoCard(
                 maxLines = 3
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(height_modifier_description))
 
-            // Статистика (Язык, Звезды, Форки) и кнопка Star
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Имитация кружочка цвета языка программирования
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Box(
                             modifier = Modifier
@@ -208,29 +314,36 @@ private fun GithubRepoCard(
                                 .background(if (item.language == "Kotlin") Color(0xFFB125EA) else Color.Gray)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text(text = item.language, fontSize = 12.sp)
+                        Text(text = item.language, fontSize = repo_description_labels_font)
                     }
-                    Text(text = "⭐ ${item.stars}", fontSize = 12.sp)
-                    Text(text = "🔀 ${item.forks}", fontSize = 12.sp)
+                    RepoStatItem(
+                        icon = painterResource(Res.drawable.ic_star),
+                        text = item.stars.toString(),
+                        iconTint = Color(0xFFFFC107)
+                    )
+                    RepoStatItem(
+                        icon = painterResource(Res.drawable.ic_fork),
+                        text = item.forks.toString()
+                    )
                 }
-
-                Button(
-                    onClick = { isStarred = !isStarred },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (isStarred) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceVariant,
-                        contentColor = MaterialTheme.colorScheme.onSurface
-                    ),
-                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
-                    modifier = Modifier.height(32.dp)
-                ) {
-                    Text(text = if (isStarred) "Starred" else "Star", fontSize = 12.sp)
-                }
+            }
+            Button(
+                onClick = { isStarred = !isStarred },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isStarred) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceVariant,
+                    contentColor = MaterialTheme.colorScheme.onSurface
+                ),
+                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
+                modifier = Modifier
+                    .height(height_modifier_large)
+                    .align(Alignment.End)
+            ) {
+                Text(text = if (isStarred) "Starred" else "Star", fontSize = 12.sp)
             }
         }
     }
 }
 
-// Заглушка для вкладок Inbox, Explore, Profile
 @Composable
 private fun StubScreen(tabName: String, modifier: Modifier = Modifier) {
     Box(
@@ -238,7 +351,7 @@ private fun StubScreen(tabName: String, modifier: Modifier = Modifier) {
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = "$tabName Screen Content",
+            text = stubScreenContent(tabName),
             fontSize = 18.sp,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
         )
@@ -258,10 +371,10 @@ private fun GithubBottomNavigation(
             icon = {
                 Icon(
                     painter = painterResource(Res.drawable.ic_home),
-                    contentDescription = "Home"
+                    contentDescription = StringConstants.MainScreen.MAIN_SCREEN_TAB_HOME
                 )
             },
-            label = { Text("Home") },
+            label = { Text(StringConstants.MainScreen.MAIN_SCREEN_TAB_HOME) },
             selected = currentTab == GithubTab.HOME,
             onClick = { onTabSelected(GithubTab.HOME) }
         )
@@ -269,10 +382,10 @@ private fun GithubBottomNavigation(
             icon = {
                 Icon(
                     painter = painterResource(Res.drawable.ic_inbox),
-                    contentDescription = "Inbox"
+                    contentDescription = StringConstants.MainScreen.MAIN_SCREEN_TAB_INBOX
                 )
             },
-            label = { Text("Inbox") },
+            label = { Text(StringConstants.MainScreen.MAIN_SCREEN_TAB_INBOX) },
             selected = currentTab == GithubTab.INBOX,
             onClick = { onTabSelected(GithubTab.INBOX) }
         )
@@ -280,10 +393,10 @@ private fun GithubBottomNavigation(
             icon = {
                 Icon(
                     painter = painterResource(Res.drawable.ic_explore),
-                    contentDescription = "Explore"
+                    contentDescription = StringConstants.MainScreen.MAIN_SCREEN_TAB_EXPLORE
                 )
             },
-            label = { Text("Explore") },
+            label = { Text(StringConstants.MainScreen.MAIN_SCREEN_TAB_EXPLORE) },
             selected = currentTab == GithubTab.EXPLORE,
             onClick = { onTabSelected(GithubTab.EXPLORE) }
         )
@@ -291,10 +404,10 @@ private fun GithubBottomNavigation(
             icon = {
                 Icon(
                     painter = painterResource(Res.drawable.ic_profile),
-                    contentDescription = "Profile"
+                    contentDescription = StringConstants.MainScreen.MAIN_SCREEN_TAB_PROFILE
                 )
             },
-            label = { Text("Profile") },
+            label = { Text(StringConstants.MainScreen.MAIN_SCREEN_TAB_PROFILE) },
             selected = currentTab == GithubTab.PROFILE,
             onClick = { onTabSelected(GithubTab.PROFILE) }
         )

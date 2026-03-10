@@ -32,7 +32,7 @@ fun GreetingScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
-            text = StringConstants.GreetingScreen.GREETING_MESSAGE,
+            text = StringConstants.GreetingScreen.GREETING_SCREEN_GREETING_MESSAGE,
             modifier = Modifier
                 .weight(1f)
                 .padding(top = paddingMainCompose),
@@ -55,7 +55,7 @@ fun GreetingScreen(
             modifier = Modifier.padding(top = paddingTinyCompose),
             onClick = onContinueClicked,
         ) {
-            Text(StringConstants.GreetingScreen.CONTINUE_LABEL)
+            Text(StringConstants.GreetingScreen.GREETING_SCREEN_CONTINUE_LABEL)
         }
         Spacer(modifier = Modifier.weight(1f))
     }

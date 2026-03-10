@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.hwapp.feature.greeting_feature.GreetingScreen
 import com.example.hwapp.exitApplication
+import com.example.hwapp.feature.App_main.UserRepository.currentUsername
 import com.example.hwapp.feature.login_feature.presentation.LoginScreen
 import com.example.hwapp.feature.main_feature.presentation.MainScreen
 import composeResources.AppTheme
@@ -17,7 +18,6 @@ import composeResources.AppTheme
 fun App() {
     AppTheme {
         val navController = rememberNavController()
-        val currentUsername = remember { mutableStateOf("") }
 
         NavHost(
             navController = navController,
@@ -35,8 +35,7 @@ fun App() {
             composable("login") {
                 LoginScreen(
                     navController = navController,
-                    onLoginSuccess = { username ->
-                        currentUsername.value = username
+                    onLoginSuccess = {
                         navController.navigate("main") {
                             popUpTo("login") { inclusive = true }
                         }
@@ -45,7 +44,6 @@ fun App() {
             }
             composable("main") {
                 MainScreen(
-                    username = currentUsername.value.ifEmpty { "Гость" },
                     onExitApp = {
                         exitApplication()
                     }
