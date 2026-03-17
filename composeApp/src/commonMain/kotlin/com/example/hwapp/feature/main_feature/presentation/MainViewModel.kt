@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.hwapp.events.MainUiEvent
 import com.example.hwapp.feature.App_main.BaseViewModel
 import com.example.hwapp.feature.App_main.UserRepository
+import com.example.hwapp.feature.main_feature.data.AppDependencies
 import com.example.hwapp.feature.main_feature.data.GithubRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -25,8 +26,9 @@ class MainViewModel : BaseViewModel<MainUiEvent, MainUiState>(
     private val _events = MutableSharedFlow<MainUiEvent>()
     override val events: SharedFlow<MainUiEvent> = _events.asSharedFlow()
 
-    private val repository = GithubRepository()
+    private val repository = GithubRepository(AppDependencies.dao)
     private val searchQuery = MutableStateFlow("")
+
 
     init {
         val savedName = UserRepository.currentUsername.value
@@ -100,7 +102,36 @@ class MainViewModel : BaseViewModel<MainUiEvent, MainUiState>(
             }
         }
     }
+    fun refresh() {
+        val currentQuery = searchQuery.value
+        if (currentQuery.isBlank()) return
 
+        updateState { copy(isRefreshing = true, errorMessage = null) }
+
+        viewModelScope.launch {
+            val result = repository.searchRepositories(currentQuery, page = 1)
+
+            result.onSuccess { newItems ->
+                updateState {
+                    copy(
+                        isRefreshing = false,
+                        items = newItems,
+                        page = 1,
+                        isListEmpty = newItems.isEmpty(),
+                        isEndOfList = newItems.isEmpty()
+                    )
+                }
+            }.onFailure { error ->
+                updateState { copy(isRefreshing = false, errorMessage = error.message ?: "Ошибка обновления") }
+            }
+        }
+    }
+    fun logout() {
+        viewModelScope.launch {
+            UserRepository.saveUsername("")
+            _events.emit(MainUiEvent.Logout)
+        }
+    }
     fun retry() {
         val currentQuery = searchQuery.value
         searchQuery.value = ""

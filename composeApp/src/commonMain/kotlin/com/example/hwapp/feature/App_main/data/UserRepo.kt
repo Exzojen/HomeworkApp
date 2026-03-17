@@ -1,4 +1,4 @@
-package com.example.hwapp.feature.App_main // или любой другой подходящий пакет
+package com.example.hwapp.feature.App_main
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
