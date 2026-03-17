@@ -7,8 +7,12 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinxSerialization)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.room)
 }
-
+room {
+    schemaDirectory("$projectDir/schemas")
+}
 kotlin {
     androidTarget {
         compilerOptions {
@@ -51,6 +55,9 @@ kotlin {
             implementation(libs.ktor.client.logging)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.datastore.preferences)
+            implementation(libs.room.runtime)
+            implementation(libs.sqlite.bundled)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
@@ -90,5 +97,6 @@ android {
 
 dependencies {
     debugImplementation(libs.compose.uiTooling)
+    ksp(libs.room.compiler)
 }
 

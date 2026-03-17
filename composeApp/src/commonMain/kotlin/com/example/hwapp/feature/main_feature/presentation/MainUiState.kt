@@ -12,6 +12,7 @@ data class MainUiState(
     val items: List<GithubRepoItem> = emptyList(),
     val isLoading: Boolean = false,
     val isPaging: Boolean = false,
+    val isRefreshing: Boolean = false,
     val errorMessage: String? = null,
     val isListEmpty: Boolean = false,
     val currentTab: GithubTab = GithubTab.HOME,

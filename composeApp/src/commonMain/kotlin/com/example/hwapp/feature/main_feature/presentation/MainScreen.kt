@@ -4,8 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,7 +48,8 @@ import hwapp.composeapp.generated.resources.ic_star
 fun MainScreen(
     username: String = StringConstants.MainScreen.MAIN_SCREEN_USERNAME_PLACEHOLDER,
     viewModel: MainViewModel = viewModel(),
-    onExitApp: () -> Unit = {}
+    onExitApp: () -> Unit = {},
+    onNavigateToLogin: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsState()
 
@@ -54,6 +57,7 @@ fun MainScreen(
         viewModel.events.collectLatest { event ->
             when (event) {
                 is MainUiEvent.ExitApp -> onExitApp()
+                is MainUiEvent.Logout -> onNavigateToLogin()
             }
         }
     }
@@ -123,13 +127,21 @@ fun MainScreen(
                             MainScreenFeed(
                                 items = state.items,
                                 isPaging = state.isPaging,
+                                isRefreshing = state.isRefreshing,
                                 pagingError = if (state.items.isNotEmpty()) state.errorMessage else null,
                                 onLoadMore = { viewModel.loadNextPage() },
+                                onRefresh = { viewModel.refresh() },
                                 onRetryPaging = { viewModel.loadNextPage() }
                             )
                         }
                     }
                 }
+            } else if (state.currentTab == GithubTab.PROFILE) {
+                ProfileScreen(
+                    username = state.username,
+                    onLogoutClick = { viewModel.logout() },
+                    modifier = Modifier.weight(1f)
+                )
             } else {
                 StubScreen(tabName = state.currentTab.name, modifier = Modifier.weight(1f))
             }
@@ -165,12 +177,15 @@ private fun MainScreenHeader(username: String, currentTab: GithubTab) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun MainScreenFeed(
     items: List<GithubRepoItem>,
     isPaging: Boolean,
+    isRefreshing: Boolean,
     pagingError: String?,
     onLoadMore: () -> Unit,
+    onRefresh: () -> Unit,
     onRetryPaging: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -183,34 +198,40 @@ private fun MainScreenFeed(
         }
     }
 
-    LazyColumn(
-        state = listState,
-        modifier = modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(paddingMainCompose),
-        verticalArrangement = Arrangement.spacedBy(paddingMainCompose)
+    androidx.compose.material3.pulltorefresh.PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = onRefresh,
+        modifier = modifier.fillMaxWidth()
     ) {
-        items(items = items, key = { it.id }) { item ->
-            GithubRepoCard(item = item)
-        }
+        LazyColumn(
+            state = listState,
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(paddingMainCompose),
+            verticalArrangement = Arrangement.spacedBy(paddingMainCompose)
+        ) {
+            items(items = items, key = { it.id }) { item ->
+                GithubRepoCard(item = item)
+            }
 
-        item {
-            if (isPaging) {
-                Box(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
-            } else if (pagingError != null) {
-                Column(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        mainScreenPagingErrorLabel(pagingError),
-                        color = MaterialTheme.colorScheme.error
-                    )
-                    Button(onClick = onRetryPaging) { Text(StringConstants.MainScreen.MAIN_SCREEN_RETRY_ACTION) }
+            item {
+                if (isPaging) {
+                    Box(
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                } else if (pagingError != null) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            mainScreenPagingErrorLabel(pagingError),
+                            color = MaterialTheme.colorScheme.error
+                        )
+                        Button(onClick = onRetryPaging) { Text(StringConstants.MainScreen.MAIN_SCREEN_RETRY_ACTION) }
+                    }
                 }
             }
         }
@@ -359,6 +380,53 @@ private fun StubScreen(tabName: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
+fun ProfileScreen(
+    username: String,
+    onLogoutClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            painter = painterResource(Res.drawable.ic_profile),
+            contentDescription = "Profile Avatar",
+            modifier = Modifier
+                .size(120.dp)
+                .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
+                .padding(24.dp),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text(
+            text = username.ifBlank { "Пользователь" },
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        Button(
+            onClick = onLogoutClick,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.error,
+                contentColor = MaterialTheme.colorScheme.onError
+            ),
+            modifier = Modifier.fillMaxWidth(0.6f)
+        ) {
+            Text("Выйти", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        }
+    }
+}
+
+@Composable
 private fun GithubBottomNavigation(
     currentTab: GithubTab,
     onTabSelected: (GithubTab) -> Unit
@@ -413,6 +481,7 @@ private fun GithubBottomNavigation(
         )
     }
 }
+
 
 @Preview(showBackground = true)
 @Composable
