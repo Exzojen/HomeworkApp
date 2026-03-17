@@ -1,4 +1,4 @@
-package com.example.hwapp.theme
+package composeResources
 
 import androidx.compose.ui.graphics.Color
 

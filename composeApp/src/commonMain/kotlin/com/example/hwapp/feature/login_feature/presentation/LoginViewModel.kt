@@ -1,9 +1,10 @@
-package com.example.hwapp.viewmodels
+package com.example.hwapp.feature.login_feature.presentation
 
 import androidx.lifecycle.viewModelScope
-import com.example.hwapp.states.LoginUiState
 import com.example.hwapp.events.LoginUiEvent
 import com.example.hwapp.events.UserData
+import com.example.hwapp.feature.App_main.BaseViewModel
+import com.example.hwapp.feature.App_main.UserRepository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -26,7 +27,7 @@ class LoginViewModel : BaseViewModel<LoginUiEvent, LoginUiState>(
         updateState { copy(password = value) }
     }
 
-    fun onLoginClick() {
+    fun onLoginClick(usernameInput: String) {
         if (state.value.isLoginButtonActive) return
 
         updateState {
@@ -35,7 +36,7 @@ class LoginViewModel : BaseViewModel<LoginUiEvent, LoginUiState>(
                 isLoginButtonActive = true,
             )
         }
-
+        UserRepository.saveUsername(usernameInput)
         viewModelScope.launch {
             delay(2000)
 
@@ -48,10 +49,4 @@ class LoginViewModel : BaseViewModel<LoginUiEvent, LoginUiState>(
             _events.emit(LoginUiEvent.LoginSuccess(user = userData))
         }
     }
-
-//    fun onNavigateBack() {
-//        viewModelScope.launch {
-//            _events.emit(LoginUiEvent.NavigateBack)
-//        }
-//    }
 }

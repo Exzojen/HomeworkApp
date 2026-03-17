@@ -1,4 +1,4 @@
-package com.example.hwapp
+package com.example.hwapp.feature.greeting_feature
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -11,11 +11,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import coil3.compose.AsyncImage
-import com.example.hwapp.theme.AppTheme
-import com.example.hwapp.theme.StringConstants
-import com.example.hwapp.theme.fontSizeMainCompose
-import com.example.hwapp.theme.paddingMainCompose
-import com.example.hwapp.theme.paddingTinyCompose
+import composeResources.AppTheme
+import composeResources.StringConstants
+import composeResources.fontSizeMainCompose
+import composeResources.paddingMainCompose
+import composeResources.paddingTinyCompose
 import org.jetbrains.compose.resources.painterResource
 import hwapp.composeapp.generated.resources.Res
 import hwapp.composeapp.generated.resources.compose_multiplatform
@@ -32,7 +32,7 @@ fun GreetingScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
-            text = StringConstants.GreetingScreen.GREETING_MESSAGE,
+            text = StringConstants.GreetingScreen.GREETING_SCREEN_GREETING_MESSAGE,
             modifier = Modifier
                 .weight(1f)
                 .padding(top = paddingMainCompose),
@@ -55,7 +55,7 @@ fun GreetingScreen(
             modifier = Modifier.padding(top = paddingTinyCompose),
             onClick = onContinueClicked,
         ) {
-            Text(StringConstants.GreetingScreen.CONTINUE_LABEL)
+            Text(StringConstants.GreetingScreen.GREETING_SCREEN_CONTINUE_LABEL)
         }
         Spacer(modifier = Modifier.weight(1f))
     }

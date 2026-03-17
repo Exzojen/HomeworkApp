@@ -1,4 +1,4 @@
-package com.example.hwapp.states
+package com.example.hwapp.feature.login_feature.presentation
 
 import androidx.compose.runtime.Immutable
 
